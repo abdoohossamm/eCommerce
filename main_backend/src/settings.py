@@ -41,11 +41,17 @@ class Dev(Configuration):
         'django.contrib.staticfiles',
         'django_celery_results',
         'django_celery_beat',
+        'rest_framework',
+        'rest_framework_simplejwt',
+        'corsheaders',
+        'djoser',
+        'store',
     ]
 
     MIDDLEWARE = [
         'django.middleware.security.SecurityMiddleware',
         'django.contrib.sessions.middleware.SessionMiddleware',
+        'corsheaders.middleware.CorsMiddleware',
         'django.middleware.common.CommonMiddleware',
         'django.middleware.csrf.CsrfViewMiddleware',
         'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -153,6 +159,9 @@ class Dev(Configuration):
     # Email settings
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
     ADMINS = [("Abdoo", "abdoohossamm@outlook.com")]
+    CORS_ALLOWED_ORIGINS = [
+        'http://localhost:8080'
+    ]
 
 
 class Prod(Dev):
@@ -172,3 +181,4 @@ class Prod(Dev):
     }
     CELERY_RESULT_BACKEND = "django-db"
     CELERY_BROKER_URL = f"redis://{os.environ.get('MAIN_REDIS_HOST')}:{os.environ.get('MAIN_REDIS_PORT')}/0"
+    CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', '').split()
