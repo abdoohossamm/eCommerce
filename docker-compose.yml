@@ -1,0 +1,51 @@
+version: '3.8'
+services:
+  main_app:
+    env_file:
+      - .env
+    build:
+      context: main_backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./main_backend:/app
+    depends_on:
+      - ecommerce_db
+      - ecommerce_redis
+
+  frontend_app:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend:/app
+    depends_on:
+      - main_app
+
+  ecommerce_db:
+    image: 'postgres:14.1-alpine'
+    restart: always
+    environment:
+      POSTGRES_USER: ${MAIN_DB_USER}
+      POSTGRES_PASSWORD: ${MAIN_DB_PASSWORD}
+      POSTGRES_DB: ${MAIN_DB_DATABASE}
+      PGDATA: /var/lib/postgresql/ecommerce/data
+    volumes:
+      - ecommerce_db:/var/lib/postgresql/ecommerce/data
+    ports:
+      - "${MAIN_STREAMING_DB_PORT:-54321}:${MAIN_DB_PORT}"
+
+  ecommerce_redis:
+    image: 'bitnami/redis:latest'
+    ports:
+      - "${MAIN_STREAMING_REDIS_PORT:-6379}:${MAIN_REDIS_PORT}"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    volumes:
+      - redis:/bitnami/redis/data
+volumes:
+  redis:
+  ecommerce_db:
