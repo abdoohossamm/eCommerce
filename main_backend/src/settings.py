@@ -45,6 +45,7 @@ class Dev(Configuration):
         'rest_framework_simplejwt',
         'corsheaders',
         'djoser',
+        'versatileimagefield',
         'store',
     ]
 
@@ -123,6 +124,10 @@ class Dev(Configuration):
 
     STATIC_URL = 'static/'
     STATIC_ROOT = 'static/'
+    # define where uploaded files are saved.
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+    # URL/path to serve media from.
+    MEDIA_URL = '/media/'
 
     # Default primary key field type
     # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field

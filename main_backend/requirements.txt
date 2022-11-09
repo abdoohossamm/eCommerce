@@ -13,3 +13,5 @@ django-cors-headers==3.13.0
 djoser==2.1.0
 djangorestframework-simplejwt==4.8.0
 social-auth-app-django==5.0.0
+django-versatileimagefield==2.2
+drf-yasg==1.21.4
