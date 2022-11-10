@@ -1,6 +1,8 @@
 """
 A Model for Store app
 """
+import base64
+
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -63,8 +65,8 @@ class Album(models.Model):
 
     """
 
-    image = VersatileImageField(upload_to=image_rename, ppoi_field="ppoi")
-    ppoi = PPOIField(null=True, blank=True)
+    image = models.ImageField(upload_to=image_rename)
+    created_by = models.ForeignKey(User, related_name='image_creator', on_delete=models.CASCADE)
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField(db_index=True)
@@ -79,7 +81,7 @@ class Album(models.Model):
 
 
 class Review(models.Model):
-    creator = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, related_name='review_creator', on_delete=models.CASCADE)
     content = models.TextField()
     rate = models.PositiveIntegerField()
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
@@ -121,10 +123,18 @@ class Product(models.Model):
         return self.slug
 
     def generate_thumbnail(self):
-        if self.images:
+        if self.images.all():
             self.thumbnail = self.images.all()[0].image
+            self.save()
+            return True
+        else:
+            return False
 
     @property
     def get_thumbnail(self):
         if self.thumbnail:
             return self.thumbnail.url
+        elif self.generate_thumbnail():
+            return self.thumbnail.url
+        else:
+            return None

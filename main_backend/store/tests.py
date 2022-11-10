@@ -57,7 +57,7 @@ class TestAlbumModel(TestCase):
         self.product = Product.objects.create(category=self.categ1, title='Django project',
                                             slug='django-project', description='This is the main django project',
                                             price=125, created_by=self.user1)
-        self.data1 = Album.objects.create(content_object=self.product, image='docker.png')
+        self.data1 = Album.objects.create(content_object=self.product, image='docker.png', created_by=self.product.created_by)
 
     def test_image_url(self):
         """
@@ -86,8 +86,8 @@ class TestProductModel(TestCase):
         self.data1 = Product.objects.create(category=self.categ1, title='Django project',
                                             slug='django-project', description='This is the main django project',
                                             price=125, created_by=self.user1)
-        self.data1.images.create(image='docker.png')
-        self.data1.images.create(image='django.png')
+        self.data1.images.create(image='docker.png', created_by=self.data1.created_by)
+        self.data1.images.create(image='django.png', created_by=self.data1.created_by)
 
         # second data instance
         self.user2 = self.UserModel.objects.create(username='testuser2', password='123456789')
@@ -95,8 +95,8 @@ class TestProductModel(TestCase):
         self.data2 = Product.objects.create(category=self.categ2, title='Zsqlite project',
                                             slug='zsqlite-project', description='This is the main asqlite project',
                                             price=125, created_by=self.user2)
-        self.data2.images.create(image='flask.png')
-        self.data2.images.create(image='asqlite.png')
+        self.data2.images.create(image='flask.png', created_by=self.data2.created_by)
+        self.data2.images.create(image='asqlite.png', created_by=self.data2.created_by)
 
     def test_product_model_entry(self):
         """
@@ -130,6 +130,4 @@ class TestProductModel(TestCase):
 
     def test_thumbnail_url(self):
         data = self.data1
-        self.assertEqual(data.get_thumbnail, None)
-        data.generate_thumbnail()
         self.assertEqual(data.get_thumbnail, f'{settings.MEDIA_URL}docker.png')
