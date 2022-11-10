@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from store.models import Category, Album, Review, Product
 from django.contrib.auth import get_user_model
-from drf_extra_fields.fields import Base64ImageField
 
 User = get_user_model()
 
@@ -21,7 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class ImagesSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
-    image = Base64ImageField(required=False)
+    image = serializers.ImageField(required=False)
 
     class Meta:
         model = Album
@@ -30,7 +29,7 @@ class ImagesSerializer(serializers.ModelSerializer):
 
 class AlbumSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
-    image = Base64ImageField(required=False)
+    image = serializers.ImageField(required=False)
 
     class Meta:
         model = Album
@@ -96,7 +95,7 @@ class ProductDetailSerializer(ProductSerializer):
             image.image = image64
             image.save()
             try:
-                image.content_object.generate_thumbnail()
+                image.content_object.get_thumbnail
             except Exception as e:
                 raise e
         return instance
