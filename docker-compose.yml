@@ -7,12 +7,24 @@ services:
       context: main_backend
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "8001:8001"
     volumes:
       - ./main_backend:/app
+      - static:/app/static
+      - media:/app/media
     depends_on:
       - ecommerce_db
       - ecommerce_redis
+
+  main_app_nginx:
+    build: ./nginx_main_backend
+    volumes:
+      - static:/app/static
+      - media:/app/media
+    ports:
+      - "8000:8000"
+    depends_on:
+      - main_app
 
   frontend_app:
     build:
@@ -49,3 +61,5 @@ services:
 volumes:
   redis:
   ecommerce_db:
+  static:
+  media:
