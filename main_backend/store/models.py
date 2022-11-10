@@ -2,7 +2,9 @@
 A Model for Store app
 """
 import base64
-
+from PIL import Image
+from io import BytesIO
+from django.core.files import File
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -122,19 +124,24 @@ class Product(models.Model):
     def get_absolute_url(self):
         return self.slug
 
-    def generate_thumbnail(self):
-        if self.images.all():
-            self.thumbnail = self.images.all()[0].image
-            self.save()
-            return True
+    def generate_thumbnail(self, image=None, size=(300,200)):
+        img = image if image else self.images.all()[0].image if self.images.all() else None
+        if img:
+            image = Image.open(img)
+            image.convert('RGB')
+            image.thumbnail(size)
+            thumb_io = BytesIO()
+            image.save(thumb_io, 'JPEG', quality=85)
+            thumbnail = File(thumb_io, name=img.name)
+            return thumbnail
         else:
-            return False
+            return None
 
     @property
     def get_thumbnail(self):
         if self.thumbnail:
             return self.thumbnail.url
-        elif self.generate_thumbnail():
-            return self.thumbnail.url
         else:
-            return None
+            self.thumbnail = self.generate_thumbnail()
+            self.save()
+            return self.thumbnail.url

@@ -2,10 +2,19 @@
 Test module for the Store app
 The tests in this module doesn't include APIs tests
 """
-from django.test import TestCase
-from store.models import Category, Album, image_rename, Product
-from django.contrib.auth import get_user_model
+import shutil
+import tempfile
+from io import BytesIO
+from pathlib import Path
+
 from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.core.files import File
+from django.test import TestCase, override_settings
+
+from store.models import Category, Album, image_rename, Product
+
+MEDIA_ROOT = tempfile.mkdtemp()
 
 
 class TestCategoryModel(TestCase):
@@ -49,15 +58,16 @@ class TestAlbumModel(TestCase):
     """
     Test Class for Album Model in Store app
     """
-    def setUp(self) -> None:
 
+    def setUp(self) -> None:
         self.UserModel = get_user_model()
         self.user1 = self.UserModel.objects.create(username='testuser', password='123456789')
         self.categ1 = Category.objects.create(name='django', slug='django-test', created_by=self.user1)
         self.product = Product.objects.create(category=self.categ1, title='Django project',
-                                            slug='django-project', description='This is the main django project',
-                                            price=125, created_by=self.user1)
-        self.data1 = Album.objects.create(content_object=self.product, image='docker.png', created_by=self.product.created_by)
+                                              slug='django-project', description='This is the main django project',
+                                              price=125, created_by=self.user1)
+        self.data1 = Album.objects.create(content_object=self.product, image='docker.png',
+                                          created_by=self.product.created_by)
 
     def test_image_url(self):
         """
@@ -70,6 +80,8 @@ class TestAlbumModel(TestCase):
         data = self.data1
         self.assertEqual(image_rename(data, 'docker.png'), 'user_1/docker.png')
 
+
+@override_settings(MEDIA_ROOT=MEDIA_ROOT)
 class TestProductModel(TestCase):
     """
     Test Class for Product Model in Store app
@@ -86,8 +98,17 @@ class TestProductModel(TestCase):
         self.data1 = Product.objects.create(category=self.categ1, title='Django project',
                                             slug='django-project', description='This is the main django project',
                                             price=125, created_by=self.user1)
-        self.data1.images.create(image='docker.png', created_by=self.data1.created_by)
-        self.data1.images.create(image='django.png', created_by=self.data1.created_by)
+        from PIL import Image
+
+        img = Image.new(mode="RGB", size=(400, 300), color=(209, 123, 193))
+        thumb_io = BytesIO()
+        thumb_io2 = BytesIO()
+        img.save(thumb_io, 'JPEG', quality=85)
+        img.save(thumb_io2, 'JPEG', quality=85)
+        image = File(thumb_io, name='docker.png')
+        image2 = File(thumb_io2, name='docker2.png')
+        self.data1.images.create(image=image, created_by=self.data1.created_by)
+        self.data1.images.create(image=image2, created_by=self.data1.created_by)
 
         # second data instance
         self.user2 = self.UserModel.objects.create(username='testuser2', password='123456789')
@@ -95,8 +116,10 @@ class TestProductModel(TestCase):
         self.data2 = Product.objects.create(category=self.categ2, title='Zsqlite project',
                                             slug='zsqlite-project', description='This is the main asqlite project',
                                             price=125, created_by=self.user2)
-        self.data2.images.create(image='flask.png', created_by=self.data2.created_by)
-        self.data2.images.create(image='asqlite.png', created_by=self.data2.created_by)
+        image3 = File(thumb_io, name='django.png')
+        image4 = File(thumb_io, name='django2.png')
+        self.data2.images.create(image=image3, created_by=self.data2.created_by)
+        self.data2.images.create(image=image4, created_by=self.data2.created_by)
 
     def test_product_model_entry(self):
         """
@@ -123,11 +146,12 @@ class TestProductModel(TestCase):
         products = Product.objects.all()
         self.assertEqual(str(products[0]), 'Zsqlite project')
 
-    def test_generating_thumbnail(self):
-        data = self.data1
-        data.generate_thumbnail()
-        self.assertEqual(data.thumbnail, 'docker.png')
-
     def test_thumbnail_url(self):
         data = self.data1
-        self.assertEqual(data.get_thumbnail, f'{settings.MEDIA_URL}docker.png')
+        self.assertEqual(Path(data.get_thumbnail).resolve().parent,
+                         Path(f'{settings.MEDIA_URL}thumbnail/user_1/docker_image.png').resolve().parent)
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(MEDIA_ROOT, ignore_errors=True)
+        super().tearDownClass()
