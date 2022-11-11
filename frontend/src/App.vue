@@ -29,10 +29,10 @@
     <section class="section">
     <router-view/>
     </section>
-    <footer class="footer">
-      <p class="has-text-centered">Copyright Abdoohossamm (c) 2022</p>
-    </footer>
   </div>
+  <footer class="footer">
+    <p class="has-text-centered">Copyright Abdoohossamm (c) 2022</p>
+  </footer>
 </template>
 <script>
 export default {
