@@ -25,7 +25,7 @@
             <input type="number" class="input" min="1" v-model="quantity">
           </div>
           <div class="control">
-            <a class="button is-dark">Add to cart</a>
+            <a class="button is-dark" @click="addToCart">Add to cart</a>
           </div>
         </div>
       </div>
