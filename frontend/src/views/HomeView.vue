@@ -49,13 +49,17 @@ export default {
   mounted() {
     this.getProducts()
   },
-  methods: {getProducts(){
-    axios.get('/api/v1/products').then(response =>{
+  methods: {
+    getProducts: async function(){
+      this.$store.commit('setIsLoading', true)
+
+      await axios.get('/api/v1/products').then(response =>{
       this.Products = response.data.results
     }).catch(error =>{
       console.log(error)
     })
-  }
+      this.$store.commit('setIsLoading', false)
+    }
   }
 }
 </script>
