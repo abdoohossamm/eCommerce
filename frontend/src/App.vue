@@ -10,13 +10,34 @@
         </a>
       </div>
         <div class="navbar-menu" id="navbar-menu" v-bind:class="{'is-active': showMobileMenu}">
-          <div class="navbar-end">
-            <router-link to="/" class="navbar-item">summer</router-link>
-            <router-link to="/" class="navbar-item">winter</router-link>
+          <div class="navbar-start">
+            <a class="navbar-item">
+              Home
+            </a>
 
+            <a class="navbar-item">
+              About
+            </a>
+
+            <div class="navbar-item has-dropdown is-hoverable">
+              <a class="navbar-link">
+                Categories
+              </a>
+
+              <div class="navbar-dropdown"
+                   v-for="category in Categories"
+                   v-bind:key="category.id">
+                <a class="navbar-item">
+                  <router-link to="/" class="navbar-item">{{category.name}}</router-link>
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="navbar-end">
             <div class="navbar-item">
               <div class="buttons">
-                <router-link to="/login" class="button is-light">Login</router-link>
+                <router-link to="/signup" class="button is-primary">Sign up</router-link>
+                <router-link to="/login" class="button is-light">Log in</router-link>
                 <router-link to="/cart" class="button is-success">
                   <span class="icon"><i class="fas fa-shopping-cart"></i></span>
                   <span>Cart ({{cartTotalLength}})</span>
@@ -40,9 +61,12 @@
   </footer>
 </template>
 <script>
+import axios from "axios";
+
 export default {
   data(){
     return{
+      Categories: [],
       showMobileMenu: false,
       cart:{
         items:[]
@@ -54,6 +78,11 @@ export default {
   },
   mounted() {
     this.cart = this.$store.state.cart
+    axios.get('/api/v1/categories/').then(response =>{
+      this.Categories = response.data.results
+    }).catch(error =>{
+      console.log(error)
+    })
   },
   computed:{
     cartTotalLength(){
