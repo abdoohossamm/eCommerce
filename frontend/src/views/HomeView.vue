@@ -25,7 +25,7 @@
           </figure>
           <h3 class="is-size-4">{{product.title}}</h3>
           <p class="is-size-6 has-text-grey-dark">{{product.price}}</p>
-          <router-link v-bind:to="product.slug" class="button is-dark mt-4">
+          <router-link v-bind:to="{name: 'product', params: {product_slug: product.slug}}" class="button is-dark mt-4">
             View details
           </router-link>
 

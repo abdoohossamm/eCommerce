@@ -1,0 +1,80 @@
+<template>
+  <div class="page-product">
+    <div class="columns is-multiline">
+      <div class="column is-9">
+        <h1 class="title">{{product.title}}</h1>
+        <figure class="image mb-6">
+          <Carousel>
+            <Slide v-for="(slide, id) in Slides" :key="id">
+              <img :src="slide.image" alt="thumbnail for product">
+            </Slide>
+
+            <template #addons="{ slidesCount }">
+              <Pagination/>
+              <Navigation v-if="slidesCount > 1" />
+            </template>
+          </Carousel>
+        </figure>
+        <p>{{product.description}}</p>
+      </div>
+      <div class="column is-3">
+        <h2 class="subtitle">Information</h2>
+        <p><strong>Price: </strong>{{product.price}}</p>
+        <div class="field has-addons mb-6">
+          <div class="control">
+            <input type="number" class="input" min="1" v-model="quantity">
+          </div>
+          <div class="control">
+            <a class="button is-dark">Add to cart</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import axios from "axios";
+import 'vue3-carousel/dist/carousel.css';
+import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel';
+export default {
+  name: "ProductView",
+  data(){
+    return{
+      product:[],
+      Slides:5,
+      quantity: 1
+    }
+  },
+  methods:{
+    getProduct : function (){
+      const product_slug = this.$route.params.product_slug
+
+      axios.get(`/api/v1/products/${product_slug}`).then(
+          response => {
+            this.product = response.data
+            this.Slides = this.product.images
+          }
+      ).catch( error =>{
+        console.log(error)
+      })
+
+    }
+  },
+  mounted() {
+    this.getProduct()
+  },
+  components: {
+    Carousel,
+    Slide,
+    Pagination,
+    Navigation,
+  }
+}
+
+
+</script>
+
+<style scoped>
+
+</style>
