@@ -35,6 +35,7 @@
 
 <script>
 import axios from "axios";
+import {toast} from "bulma-toast"
 import 'vue3-carousel/dist/carousel.css';
 import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel';
 export default {
@@ -59,6 +60,7 @@ export default {
       ).catch( error =>{
         console.log(error)
       })
+      this.$store.commit('setIsLoading', false)
 
     },
     addToCart: function (){
