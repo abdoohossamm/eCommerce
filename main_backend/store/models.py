@@ -131,7 +131,7 @@ class Product(models.Model):
             image.convert('RGB')
             image.thumbnail(size)
             thumb_io = BytesIO()
-            image.save(thumb_io, 'JPEG', quality=85)
+            image.save(thumb_io, 'PNG', quality=85)
             thumbnail = File(thumb_io, name=img.name)
             return thumbnail
         else:

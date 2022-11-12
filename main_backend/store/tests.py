@@ -17,6 +17,15 @@ from store.models import Category, Album, image_rename, Product
 MEDIA_ROOT = tempfile.mkdtemp()
 
 
+def generate_image(name):
+    from PIL import Image
+    img = Image.new(mode="RGB", size=(400, 300), color=(209, 123, 193))
+    thumb_io = BytesIO()
+    img.save(thumb_io, 'JPEG', quality=85)
+    image = File(thumb_io, name=name)
+    return image
+
+
 class TestCategoryModel(TestCase):
     """
     Test Class for Category Model in Store app
@@ -66,7 +75,8 @@ class TestAlbumModel(TestCase):
         self.product = Product.objects.create(category=self.categ1, title='Django project',
                                               slug='django-project', description='This is the main django project',
                                               price=125, created_by=self.user1)
-        self.data1 = Album.objects.create(content_object=self.product, image='docker.png',
+        self.image = generate_image('docker.png')
+        self.data1 = Album.objects.create(content_object=self.product, image=self.image,
                                           created_by=self.product.created_by)
 
     def test_image_url(self):
@@ -74,7 +84,7 @@ class TestAlbumModel(TestCase):
         Test Category model absolute url
         """
         data = self.data1
-        self.assertEqual(data.get_absolute_url, '/media/docker.png')
+        self.assertEqual(data.get_absolute_url, f'/media/{data.image.name}')
 
     def test_image_rename(self):
         data = self.data1
@@ -98,17 +108,11 @@ class TestProductModel(TestCase):
         self.data1 = Product.objects.create(category=self.categ1, title='Django project',
                                             slug='django-project', description='This is the main django project',
                                             price=125, created_by=self.user1)
-        from PIL import Image
 
-        img = Image.new(mode="RGB", size=(400, 300), color=(209, 123, 193))
-        thumb_io = BytesIO()
-        thumb_io2 = BytesIO()
-        img.save(thumb_io, 'JPEG', quality=85)
-        img.save(thumb_io2, 'JPEG', quality=85)
-        image = File(thumb_io, name='docker.png')
-        image2 = File(thumb_io2, name='docker2.png')
-        self.data1.images.create(image=image, created_by=self.data1.created_by)
-        self.data1.images.create(image=image2, created_by=self.data1.created_by)
+        self.image = generate_image('docker.png')
+        self.image2 = generate_image('docker2.png')
+        self.data1.images.create(image=self.image, created_by=self.data1.created_by)
+        self.data1.images.create(image=self.image2, created_by=self.data1.created_by)
 
         # second data instance
         self.user2 = self.UserModel.objects.create(username='testuser2', password='123456789')
@@ -116,10 +120,10 @@ class TestProductModel(TestCase):
         self.data2 = Product.objects.create(category=self.categ2, title='Zsqlite project',
                                             slug='zsqlite-project', description='This is the main asqlite project',
                                             price=125, created_by=self.user2)
-        image3 = File(thumb_io, name='django.png')
-        image4 = File(thumb_io, name='django2.png')
-        self.data2.images.create(image=image3, created_by=self.data2.created_by)
-        self.data2.images.create(image=image4, created_by=self.data2.created_by)
+        self.image3 = generate_image('django.png')
+        self.image4 = generate_image('django2.png')
+        self.data2.images.create(image=self.image3, created_by=self.data2.created_by)
+        self.data2.images.create(image=self.image4, created_by=self.data2.created_by)
 
     def test_product_model_entry(self):
         """
