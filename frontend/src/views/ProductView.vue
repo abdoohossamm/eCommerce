@@ -56,6 +56,7 @@ export default {
           response => {
             this.product = response.data
             this.Slides = this.product.images
+            document.title = this.product.title
           }
       ).catch( error =>{
         console.log(error)

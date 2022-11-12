@@ -48,6 +48,7 @@ export default {
   },
   mounted() {
     this.getProducts()
+    document.title = "Home | eCommerce"
   },
   methods: {
     getProducts: async function(){
