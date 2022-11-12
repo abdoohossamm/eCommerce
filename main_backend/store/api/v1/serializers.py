@@ -4,12 +4,15 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+created_by_field = {'created_by': {'default': serializers.CurrentUserDefault()}}
+
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = "__all__"
-        readonly = ["modified_at", "created_at"]
+        readonly = ["modified_at", "created_at", 'created_by']
+        extra_kwargs = created_by_field
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -25,6 +28,7 @@ class ImagesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Album
         fields = ["id", "image", "created_by"]
+        extra_kwargs = created_by_field
 
 
 class AlbumSerializer(serializers.ModelSerializer):
@@ -34,6 +38,7 @@ class AlbumSerializer(serializers.ModelSerializer):
     class Meta:
         model = Album
         fields = "__all__"
+        extra_kwargs = created_by_field
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -42,27 +47,33 @@ class ReviewSerializer(serializers.ModelSerializer):
         queryset=User.objects.all(),
         view_name="api_user_detail",
         lookup_field="username",
-
+        required=False
     )
 
     class Meta:
         model = Review
         fields = '__all__'
         readonly = ["modified_at", "created_at"]
+        extra_kwargs = created_by_field
 
 
 class ProductSerializer(serializers.ModelSerializer):
     created_by = serializers.HyperlinkedRelatedField(
         queryset=User.objects.all(),
         view_name="api_user_detail",
-        lookup_field="username"
+        lookup_field="username",
+        required=False
     )
-    thumbnail = Product.get_thumbnail
 
     class Meta:
         model = Product
         fields = '__all__'
-        readonly = ["modified_at", "created_at"]
+        readonly = ["modified_at", "created_at", 'created_by']
+        extra_kwargs = created_by_field
+
+    def create(self, validated_data):
+        validated_data['created_by'] = self.context["request"].user
+        return super(ProductSerializer, self).create(validated_data=validated_data)
 
 
 class ProductDetailSerializer(ProductSerializer):
@@ -91,7 +102,7 @@ class ProductDetailSerializer(ProductSerializer):
             image64 = image_data.get('image')
             image = Album(**image_data)
             image.content_object = instance
-            image.created_by = image.content_object.created_by
+            image.created_by = self.context["request"].user
             image.image = image64
             image.save()
             try:
