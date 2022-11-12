@@ -1,13 +1,20 @@
 <template>
   <div class="page-category">
     <h2 class="is-size-2 has-text-centered">{{category.name}}</h2>
-
+    <div class="columns is-multiline">
+      <ProductBox
+          v-for="product in products"
+          v-bind:key="product.id"
+          v-bind:product="product"
+      />
+    </div>
   </div>
 </template>
 
 <script>
 import axios from "axios";
 import {toast} from "bulma-toast";
+import ProductBox from "@/components/ProductBox";
 export default {
   name: 'CategoryView',
   data(){
@@ -16,8 +23,18 @@ export default {
       products:[]
   }
   },
+  components:{
+    ProductBox
+  },
   mounted() {
     this.getCategory()
+  },
+  watch:{
+    $route(to){
+      if (to.name === "category"){
+          this.getCategory()
+      }
+    }
   },
   methods:{
     getCategory: async function (){
