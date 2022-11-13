@@ -4,6 +4,7 @@ from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_headers, vary_on_cookie
 from django.conf import settings
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 
 from rest_framework import viewsets, generics
 from rest_framework.pagination import PageNumberPagination
@@ -60,6 +61,12 @@ class ProductViewSet(viewsets.ModelViewSet):
         if self.action in ('list', 'create'):
             return ProductSerializer
         return ProductDetailSerializer
+
+    def get_queryset(self):
+        search = self.request.query_params.get('search')
+        if search:
+            return Product.objects.filter(Q(title__icontains=search) | Q(description__icontains=search))
+        return self.queryset
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
