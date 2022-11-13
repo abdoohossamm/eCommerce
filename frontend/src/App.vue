@@ -11,26 +11,48 @@
       </div>
         <div class="navbar-menu" id="navbar-menu" v-bind:class="{'is-active': showMobileMenu}">
           <div class="navbar-start">
-            <a class="navbar-item">
+            <router-link class="navbar-item" to="/">
               Home
-            </a>
+            </router-link>
 
-            <a class="navbar-item">
+            <router-link class="navbar-item" to="/about">
               About
-            </a>
+            </router-link>
 
             <div class="navbar-item has-dropdown is-hoverable">
               <a class="navbar-link">
                 Categories
               </a>
 
-              <div class="navbar-dropdown"
-                   v-for="category in Categories"
-                   v-bind:key="category.id">
-                <a class="navbar-item">
-                  <router-link to="/" class="navbar-item">{{category.name}}</router-link>
-                </a>
+              <div class="navbar-dropdown">
+                  <router-link
+                      v-for="category in Categories"
+                      v-bind:key="category.slug"
+                      v-bind:to="{
+                        name: 'category',
+                        params: {category_slug: category.slug}
+                      }"
+                     class="navbar-item"
+                  >
+                    {{category.name}}
+                  </router-link>
               </div>
+            </div>
+            <div class="navbar-item">
+              <form action="/search" method="get">
+                <div class="field has-addons">
+                  <div class="control">
+                    <input type="text" class="input" placeholder="What are you looking for?" name="search">
+                  </div>
+                  <div class="control">
+                    <button class="button is-success">
+                      <span class="icon">
+                        <i class="fas fa-search"></i>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </form>
             </div>
           </div>
           <div class="navbar-end">
