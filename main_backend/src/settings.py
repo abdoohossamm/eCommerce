@@ -47,6 +47,7 @@ class Dev(Configuration):
         'djoser',
         'versatileimagefield',
         'store',
+        'users',
     ]
 
     MIDDLEWARE = [
