@@ -94,6 +94,8 @@ class Dev(Configuration):
     # Default user model
     AUTH_USER_MODEL = "users.CustomUser"
 
+    # Default Authentication backend
+    AUTHENTICATION_BACKENDS = ['users.backends.AuthenticationBackend']
     # Password validation
     # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 
