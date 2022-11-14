@@ -33,7 +33,7 @@ class TestCategoryModel(TestCase):
 
     def setUp(self) -> None:
         self.UserModel = get_user_model()
-        self.user = self.UserModel.objects.create(username='testuser', password='1234')
+        self.user = self.UserModel.objects.create(username='testuser', password='1234', email='abdoo@outlook.com')
         self.data1 = Category.objects.create(name='django', slug='django-test', created_by=self.user)
         self.data2 = Category.objects.create(name='asqlite', slug='asqlite', created_by=self.user)
 
@@ -70,7 +70,7 @@ class TestAlbumModel(TestCase):
 
     def setUp(self) -> None:
         self.UserModel = get_user_model()
-        self.user1 = self.UserModel.objects.create(username='testuser', password='123456789')
+        self.user1 = self.UserModel.objects.create(username='testuser', password='123456789', email='abdoo@outlook.com')
         self.categ1 = Category.objects.create(name='django', slug='django-test', created_by=self.user1)
         self.product = Product.objects.create(category=self.categ1, title='Django project',
                                               slug='django-project', description='This is the main django project',
@@ -103,7 +103,7 @@ class TestProductModel(TestCase):
         """
         self.UserModel = get_user_model()
         # first data instance
-        self.user1 = self.UserModel.objects.create(username='testuser', password='123456789')
+        self.user1 = self.UserModel.objects.create(username='testuser', password='123456789', email='abdoo@outlook.com')
         self.categ1 = Category.objects.create(name='django', slug='django-test', created_by=self.user1)
         self.data1 = Product.objects.create(category=self.categ1, title='Django project',
                                             slug='django-project', description='This is the main django project',
@@ -115,7 +115,7 @@ class TestProductModel(TestCase):
         self.data1.images.create(image=self.image2, created_by=self.data1.created_by)
 
         # second data instance
-        self.user2 = self.UserModel.objects.create(username='testuser2', password='123456789')
+        self.user2 = self.UserModel.objects.create(username='testuser2', password='123456789', email='abdoo2@outlook.com')
         self.categ2 = Category.objects.create(name='flask', slug='flask-test', created_by=self.user2)
         self.data2 = Product.objects.create(category=self.categ2, title='Zsqlite project',
                                             slug='zsqlite-project', description='This is the main asqlite project',
