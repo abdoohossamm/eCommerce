@@ -4,6 +4,7 @@ import ProductView from "@/views/ProductView";
 import CategoryView from "@/views/CategoryView";
 import SearchView from "@/views/SearchView";
 import CartView from "@/views/CartView";
+import SignupView from "@/views/SignupView";
 const routes = [
   {
     path: '/',
@@ -22,6 +23,11 @@ const routes = [
     path: '/product/:product_slug',
     name: 'product',
     component: ProductView
+  },
+  {
+    path: '/signup',
+    name: 'signup',
+    component: SignupView
   },
   {
     path: '/category/:category_slug',
