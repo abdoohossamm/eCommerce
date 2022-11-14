@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import ProductView from "@/views/ProductView";
 import CategoryView from "@/views/CategoryView";
 import SearchView from "@/views/SearchView";
+import CartView from "@/views/CartView";
 const routes = [
   {
     path: '/',
@@ -26,6 +27,11 @@ const routes = [
     path: '/category/:category_slug',
     name: 'category',
     component: CategoryView
+  },
+  {
+    path: '/cart',
+    name: 'cart',
+    component: CartView
   },
   {
     path: '/search',
