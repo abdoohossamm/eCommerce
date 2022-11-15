@@ -49,6 +49,7 @@ class Dev(Configuration):
         'versatileimagefield',
         'store',
         'users',
+        'orders',
     ]
 
     MIDDLEWARE = [
