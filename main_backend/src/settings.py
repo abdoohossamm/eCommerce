@@ -14,14 +14,14 @@ from pathlib import Path
 import os
 from configurations import Configuration
 from configurations import values
-
+from dotenv import load_dotenv
 
 class Dev(Configuration):
     # Build paths inside the project like this: BASE_DIR / 'subdir'.
     BASE_DIR = Path(__file__).resolve().parent.parent
     # Quick-start development settings - unsuitable for production
     # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
-
+    load_dotenv(BASE_DIR / '.env')
     # SECURITY WARNING: keep the secret key used in production secret!
     SECRET_KEY = 'django-insecure-gy@chd!-n)@wasv445exdasdw$2y^e6aq0oz9b0!^w!bfwtw'
 
@@ -198,6 +198,9 @@ class Dev(Configuration):
             'current_user': 'users.api.v1.serializers.CurrentUserSerializer',
         },
     }
+
+    PAYPAL_CLIENT_ID = os.environ.get('PAYPAL_CLIENT_ID')
+    PAYPAL_CLIENT_SECRET = os.environ.get('PAYPAL_CLIENT_SECRET')
 
 
 class Prod(Dev):
