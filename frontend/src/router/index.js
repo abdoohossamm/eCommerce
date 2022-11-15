@@ -5,6 +5,9 @@ import CategoryView from "@/views/CategoryView";
 import SearchView from "@/views/SearchView";
 import CartView from "@/views/CartView";
 import SignupView from "@/views/SignupView";
+import LoginView from "@/views/LoginView";
+import MyAccountView from "@/views/MyAccountView";
+import store from "@/store";
 const routes = [
   {
     path: '/',
@@ -30,6 +33,19 @@ const routes = [
     component: SignupView
   },
   {
+    path: '/login',
+    name: 'login',
+    component: LoginView
+  },
+  {
+    path: '/my-account',
+    name: 'my-account',
+    component: MyAccountView,
+    meta:{
+      requireLogin:true
+    }
+  },
+  {
     path: '/category/:category_slug',
     name: 'category',
     component: CategoryView
@@ -50,5 +66,11 @@ const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes
 })
-
+router.beforeEach((to, from, next) =>{
+  if(to.matched.some(record => record.meta.requireLogin) && !store.state.isAuthenticated){
+    next({name:'login', query:{to: to.path}})
+  }else {
+    next()
+  }
+})
 export default router

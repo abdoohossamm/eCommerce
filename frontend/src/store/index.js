@@ -18,6 +18,14 @@ export default createStore({
       }else{
         localStorage.setItem('cart', JSON.stringify(state.cart))
       }
+
+      if (localStorage.getItem('token')){
+        state.token = localStorage.getItem('token')
+        state.isAuthenticated = true
+      } else {
+        state.token = ''
+        state.isAuthenticated = false
+      }
     },
     addToCart(state, item){
       const exists = state.cart.items.filter(i => i.product.id === item.product.id)
