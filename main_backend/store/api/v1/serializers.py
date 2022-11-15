@@ -15,12 +15,6 @@ class CategorySerializer(serializers.ModelSerializer):
         extra_kwargs = created_by_field
 
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ["first_name", "last_name", "username", "email", 'created_at', 'is_seller']
-
-
 class ImagesSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     image = serializers.ImageField(required=False)

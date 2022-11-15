@@ -193,6 +193,12 @@ class Dev(Configuration):
         # ],
     }
 
+    DJOSER = {
+        'SERIALIZERS': {
+            'current_user': 'users.api.v1.serializers.CurrentUserSerializer',
+        },
+    }
+
 
 class Prod(Dev):
     DEBUG = int(os.environ.get('MAIN_DEBUG', 0))

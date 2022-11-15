@@ -14,8 +14,7 @@ from rest_framework.response import Response
 
 from store.api.v1.permissions import CreatorModifyOrReadOnly, IsAdminUserForObject
 from store.api.v1.serializers import ProductSerializer, ProductDetailSerializer,\
-    UserSerializer, AlbumSerializer,\
-    ReviewSerializer, CategorySerializer
+    AlbumSerializer, ReviewSerializer, CategorySerializer
 from store.models import Product, Album, Category, Review
 
 User = get_user_model()
@@ -39,17 +38,6 @@ def mine(self, request):
 
 
 viewsets.ModelViewSet.mine = mine
-
-
-class UserDetail(generics.RetrieveAPIView):
-    lookup_field = "username"
-    queryset = User.objects.all()
-    permission_classes = [CreatorModifyOrReadOnly | IsAdminUserForObject]
-    serializer_class = UserSerializer
-
-    @method_decorator(cache_page(300))
-    def get(self, *args, **kwargs):
-        return super(UserDetail, self).get(*args, *kwargs)
 
 
 class ProductViewSet(viewsets.ModelViewSet):
