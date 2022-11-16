@@ -75,32 +75,32 @@ class ProductDetailSerializer(ProductSerializer):
     images = ImagesSerializer(many=True)
 
     def update(self, instance, validated_data):
-        images = validated_data.pop('images')
-        reviews = validated_data.pop("reviews")
+        images = validated_data.pop('images', None)
+        reviews = validated_data.pop("reviews", None)
         instance = super(ProductDetailSerializer, self).update(instance, validated_data)
+        if reviews:
+            for review_data in reviews:
+                if review_data.get("id"):
+                    # review has an ID so was pre-existing
+                    continue
+                review = Review(**review_data)
+                review.created_by = self.context["request"].user
+                review.content_object = instance
+                review.save()
+        if images:
+            for image_data in images:
+                if image_data.get("id"):
+                    # image has an ID so was pre-existing
+                    continue
 
-        for review_data in reviews:
-            if review_data.get("id"):
-                # review has an ID so was pre-existing
-                continue
-            review = Review(**review_data)
-            review.created_by = self.context["request"].user
-            review.content_object = instance
-            review.save()
-
-        for image_data in images:
-            if image_data.get("id"):
-                # image has an ID so was pre-existing
-                continue
-
-            image64 = image_data.get('image')
-            image = Album(**image_data)
-            image.content_object = instance
-            image.created_by = self.context["request"].user
-            image.image = image64
-            image.save()
-            try:
-                image.content_object.get_thumbnail
-            except Exception as e:
-                raise e
+                image64 = image_data.get('image')
+                image = Album(**image_data)
+                image.content_object = instance
+                image.created_by = self.context["request"].user
+                image.image = image64
+                image.save()
+                try:
+                    image.content_object.get_thumbnail
+                except Exception as e:
+                    raise e
         return instance
