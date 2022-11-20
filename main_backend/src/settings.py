@@ -199,7 +199,7 @@ class Dev(Configuration):
             'current_user': 'users.api.v1.serializers.CurrentUserSerializer',
         },
     }
-
+    PAYPAL_MODE = os.environ.get("PAYPAL_MODE")
     PAYPAL_CLIENT_ID = os.environ.get('PAYPAL_CLIENT_ID')
     PAYPAL_CLIENT_SECRET = os.environ.get('PAYPAL_CLIENT_SECRET')
 
