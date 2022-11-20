@@ -12,7 +12,8 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
-from store.api.v1.permissions import CreatorModifyOrReadOnly, IsAdminUserForObject
+from store.api.v1.permissions import CreatorModifyOrReadOnly, IsAdminUserForObject, \
+    IsSellerUser, SellerModifyOrReadOnly, IsReviewReadOnly, CategoryPermission
 from store.api.v1.serializers import ProductSerializer, ProductDetailSerializer,\
     AlbumSerializer, ReviewSerializer, CategorySerializer
 from store.models import Product, Album, Category, Review
@@ -43,7 +44,7 @@ viewsets.ModelViewSet.mine = mine
 class ProductViewSet(viewsets.ModelViewSet):
     lookup_field = "slug"
     queryset = Product.objects.all()
-    permission_classes = [CreatorModifyOrReadOnly | IsAdminUserForObject]
+    permission_classes = [IsReviewReadOnly | SellerModifyOrReadOnly | IsAdminUserForObject | IsSellerUser]
 
     def get_serializer_class(self):
         if self.action in ('list', 'create'):
@@ -60,7 +61,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 class CategoryViewSet(viewsets.ModelViewSet):
     lookup_field = "slug"
     queryset = Category.objects.all()
-    permission_classes = [CreatorModifyOrReadOnly | IsAdminUserForObject]
+    permission_classes = [CategoryPermission]
     serializer_class = CategorySerializer
 
     def retrieve(self, request, *args, **kwargs):
