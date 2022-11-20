@@ -48,6 +48,10 @@ export default {
     }
   },mounted() {
     document.title = "Login"
+    if(axios.defaults.headers.common['Authorization']){
+      const toPath = this.$route.query.to || '/my-account'
+      this.$router.push(toPath)
+    }
   },
   methods:{
     submitForm: async function(){
