@@ -13,12 +13,16 @@ class Order(models.Model):
     last_name = models.CharField(max_length=100)
     email = models.EmailField()
     address = models.CharField(max_length=200)
-    zipcode = models.PositiveIntegerField()
+    zipcode = models.PositiveIntegerField(blank=True, null=True)
     place = models.CharField(max_length=200)
     phone = models.CharField(max_length=100)
 
     paid_amount = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     payment_token = models.CharField(max_length=200)
+    paid = models.BooleanField(default=False)
+    cash_on_delivery = models.BooleanField(default=False)
+    delivered = models.BooleanField(default=False)
+
     created_by = models.ForeignKey(User, related_name='order_creator', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
