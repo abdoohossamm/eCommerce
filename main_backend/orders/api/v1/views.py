@@ -1,9 +1,10 @@
 import random
 import string
 
-
 from rest_framework import viewsets, status, authentication, permissions
 from rest_framework.response import Response
+from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 
 from src.paypal.django_client import get_paypal_client
 from orders.models import Order
@@ -50,3 +51,26 @@ class OrderViewSet(viewsets.ModelViewSet):
                 },
                 status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(methods=["post"], detail=False, name="Capture the payment")
+    def capture(self, request):
+        if request.user.is_anonymous:
+            raise PermissionDenied("You must be logged in to see which Images are yours")
+        payment_token = request.data.get('token', None)
+        if payment_token:
+            order = get_paypal_client().capture_payment(payment_token)
+            order_status = order.get('status', None)
+            if order_status == 'COMPLETED':
+                order = Order.objects.get(payment_token=payment_token)
+                order.paid = True
+                order.save()
+                return Response({"status": "COMPLETED"}, status=status.HTTP_201_CREATED)
+            elif order.get('details')[0].get('issue') == 'ORDER_ALREADY_CAPTURED':
+                return Response({"status": "ORDER_ALREADY_CAPTURED"}, status=status.HTTP_201_CREATED)
+            elif order.get('details')[0].get('issue') == 'ORDER_NOT_APPROVED':
+                return Response({"status": "ORDER_NOT_APPROVED"}, status=status.HTTP_201_CREATED)
+            elif order.get('details')[0].get('issue') == 'INVALID_RESOURCE_ID':
+                return Response({"status": "INVALID_RESOURCE_ID"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({"token": "This field is required"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "unknown error has been happened"}, status=status.HTTP_400_BAD_REQUEST)
