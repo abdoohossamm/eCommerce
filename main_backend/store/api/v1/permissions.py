@@ -26,7 +26,7 @@ class SellerModifyOrReadOnly(permissions.IsAuthenticatedOrReadOnly):
         if request.method in permissions.SAFE_METHODS:
             return True
         if request.user and request.user.is_authenticated:
-            return bool((request.user and request.user.is_staff) or
+            return bool((request.user and request.user.is_staff) or (request.user and request.user.is_superuser) or
                         (request.user.is_seller and request.method in ['PUT', 'PATCH', 'DELETE'])
                         )
         return False
