@@ -32,6 +32,6 @@ Products API:
     * Any user can send a GET request that will return the product details.
     * Only product's seller or staff user can send a PATH and PUT request to update the product.
     * Only product's seller or staff user can send a DELETE request to delete the product.
-  * /api/v1/mine/
+  * /api/v1/products/mine/
     * Only authenticated user can send a GET request to see the products owned by them.
   
