@@ -41,6 +41,14 @@ Install the required packages:
 pip install -r requirements.txt
 ```
 
+Make a copy of the example environment variables file and call it `.env`:
+```bash
+cp .env.example .env
+```
+Edit the environmental variables and enter your variables 
+
+NOTE: if left without edit the application will run but PayPal payment won't work
+
 Run migrations:
 ```bash
 python manage.py migrate
