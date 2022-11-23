@@ -71,8 +71,8 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 class ProductDetailSerializer(ProductSerializer):
-    reviews = ReviewSerializer(many=True)
-    images = ImagesSerializer(many=True)
+    reviews = ReviewSerializer(many=True, required=False)
+    images = ImagesSerializer(many=True, required=False)
 
     def update(self, instance, validated_data):
         images = validated_data.pop('images', None)
