@@ -93,6 +93,18 @@
             </div>
           </div>
         </div>
+          <fieldset>
+            <legend>Select a Payment method:</legend>
+            <div>
+              <input type="radio" id="online" name="payment_method" value="online" v-model="payment_method" @click="setThePayment">
+              <label for="online">Online payment</label>
+            </div>
+
+            <div>
+              <input type="radio" id="cash" name="payment_method" value="cash" v-model="payment_method" @click="setThePayment">
+              <label for="cash">Cash on delivery (+10 USD)</label>
+            </div>
+          </fieldset>
         <hr>
         <div class="notification is-danger mt-4" v-if="errors.length">
           <p v-for="error in errors" v-bind:key="error">{{error}}</p>
@@ -100,8 +112,12 @@
 
         <div id="card-element" class="mb-5">
           <template v-if="cartTotalLength">
-            <button class="button is-dark" @click="submitForm">Pay now!</button>
+            <button id="pay-now" class="button is-dark" @click="submitForm">Pay now!</button>
           </template>
+        </div>
+        <div id="payment-card" class="mb-5">
+          <div id="paypal-button-container"></div>
+
         </div>
       </div>
     </div>
@@ -110,6 +126,7 @@
 </template>
 
 <script>
+import axios from "axios";
 export default {
   name:"CheckoutView",
   data(){
@@ -117,15 +134,16 @@ export default {
       cart:{
         items:[]
       },
-      stripe:{},
+      paypal:{},
       card:{},
       first_name:"",
       last_name:"",
       email:"",
       phone:"",
       address:"",
-      zipcode:"",
+      zipcode: null,
       place:"",
+      cash_on_delivery: false,
       errors: [],
     }
   },
@@ -167,6 +185,69 @@ export default {
         this.errors.push('The place field is missing')
         document.getElementById('place-input').setAttribute('class', 'input is-danger')
       }
+      if (this.errors.length === 0){
+        document.getElementById('pay-now').disabled=true
+        document.getElementById('first_name-input').disabled=true
+        document.getElementById('last_name-input').disabled=true
+        document.getElementById('email-input').disabled=true
+        document.getElementById('phone-input').disabled=true
+        document.getElementById('address-input').disabled=true
+        document.getElementById('place-input').disabled=true
+        document.getElementById('online').disabled=true
+        document.getElementById('cash').disabled=true
+      }
+      if (!this.errors.length){
+        this.submitData()
+      }
+    },
+    setThePayment: function (){
+      if (document.getElementById("online").checked){
+        document.getElementById('pay-now').innerHTML = "Pay now!"
+        this.cash_on_delivery = false
+      }
+      else if (document.getElementById("cash").checked){
+        document.getElementById('pay-now').innerHTML = "Pay later!"
+        this.cash_on_delivery = true
+      }
+    },
+    submitData: async function(){
+      const items = []
+      for(let i=0; i<this.cart.items.length; i++){
+        const item = this.cart.items[i]
+        const obj = {
+          product: item.product.id,
+          quantity: item.quantity,
+          price: item.product.price
+        }
+        items.push(obj)
+      }
+      const formData = {
+        first_name: this.first_name,
+        last_name: this.last_name,
+        email: this.email,
+        zipcode: this.zipcode,
+        address: this.address,
+        place: this.place,
+        phone: this.phone,
+        return_url: `${window.location.origin}/cart/success/`,
+        cancel_url: document.URL,
+        cash_on_delivery: this.cash_on_delivery,
+        items: items
+      }
+      this.$store.commit('setIsLoading', true)
+      await axios.
+      post('/api/v1/orders/', formData)
+          .then(response => {
+            if(response.data.paypal){
+              const data = response.data
+              window.open(data.paypal[0].links[1].href)
+            }
+
+          }).catch(errors =>{
+            console.log(errors)
+          }
+      )
+      this.$store.commit('setIsLoading', false)
     }
   },
   computed:{
