@@ -7,7 +7,7 @@ from pytz import UTC
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 
-from store.models import Product, Category
+from store.models import Product, Category, Review
 
 
 class ProductApiTestCase(TestCase):
@@ -19,8 +19,11 @@ class ProductApiTestCase(TestCase):
         test_customer_product_create()
         test_seller_product_create()
         test_post_create()
-    TODO: Check update products with PATCH and PUT request with superuser
-    TODO: Check update products with PATCH and PUT request with the product's seller
+        test_product_update_by_owner()
+        test_product_update_by_admin()
+        test_product_update_by_unauthenticated_user()
+        test_create_review_for_product_by_authenticated_user()
+        test_create_review_for_product_by_unauthenticated_user()
     """
     def setUp(self):
         """
@@ -30,7 +33,7 @@ class ProductApiTestCase(TestCase):
             email="test@example.com", username='seller', password="password", is_seller=True
         )
         self.admin = get_user_model().objects.create_user(
-            email="testadmin@example.com", username='admin', password="password3", is_superuser=True
+            email="testadmin@example.com", username='admin', password="password3", is_staff=True, is_superuser=True
         )
 
         self.user = get_user_model().objects.create_user(
@@ -84,6 +87,33 @@ class ProductApiTestCase(TestCase):
         self.user_token = Token.objects.create(user=self.user)
         self.seller_token = Token.objects.create(user=self.seller)
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_token.key)
+
+    def create_product_and_review_for_test(self):
+        """
+        Non-test method that create a product and review instance for tests
+        """
+        product = Product.objects.create(
+            category_id=1,
+            title="Asus TUF F-15",
+            slug='laptop_asus',
+            description='8GB RAM 15.6" FHD display',
+            price=2000.00,
+            created_by=self.seller,
+            created_at=timezone.now()
+        )
+        resp = self.client.get(f"/api/v1/products/{product.slug}/")
+        self.assertEqual(resp.status_code, 200)
+        review = {
+            "rate": 10,
+            "content": "Good product"
+        }
+
+        product_patch = {
+            "reviews": [
+                review
+            ]
+        }
+        return {"product_patch": product_patch, "product": product, "review": review}
 
     def test_product_list(self):
         """
@@ -335,3 +365,36 @@ class ProductApiTestCase(TestCase):
         product_resp = resp.json()
         self.assertEqual(product_dict['price'], float(product_resp['price']))
         self.assertEqual(product_dict['title'], product_resp['title'])
+
+    def test_create_review_for_product_by_authenticated_user(self):
+        """
+        test creating a review for the product by authenticated user
+        """
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_token.key)
+        created_product = self.create_product_and_review_for_test()
+        product = created_product['product']
+        product_patch = created_product['product_patch']
+        review = created_product['review']
+        resp = self.client.patch(f"/api/v1/products/{product.slug}/",
+                                 json.dumps(product_patch),
+                                 content_type='application/json')
+        self.assertEqual(resp.status_code, 200)
+        reviews = resp.json()['reviews']
+        self.assertEqual(review['rate'], int(reviews[0]['rate']))
+        self.assertEqual(review['content'], reviews[0]['content'])
+
+    def test_create_review_for_product_by_unauthenticated_user(self):
+        """
+        test creating a review for the product by unauthenticated user
+        """
+        self.client.credentials()
+        created_product = self.create_product_and_review_for_test()
+        product = created_product['product']
+        product_patch = created_product['product_patch']
+
+        resp = self.client.patch(f"/api/v1/products/{product.slug}/",
+                                 json.dumps(product_patch),
+                                 content_type='application/json')
+        self.assertEqual(resp.status_code, 401)
+        reviews = product.reviews.count()
+        self.assertTrue(reviews == 0)
