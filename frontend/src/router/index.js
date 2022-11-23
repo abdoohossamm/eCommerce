@@ -9,6 +9,7 @@ import LoginView from "@/views/LoginView";
 import MyAccountView from "@/views/MyAccountView";
 import store from "@/store";
 import CheckoutView from "@/views/CheckoutView";
+import SuccessView from "@/views/SuccessView";
 const routes = [
   {
     path: '/',
@@ -60,6 +61,14 @@ const routes = [
     path: '/cart/checkout',
     name: 'checkout',
     component: CheckoutView,
+    meta:{
+      requireLogin:true
+    }
+  },
+  {
+    path: '/cart/success',
+    name: 'success',
+    component: SuccessView,
     meta:{
       requireLogin:true
     }
