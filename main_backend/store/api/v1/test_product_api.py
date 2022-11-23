@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -198,3 +199,139 @@ class ProductApiTestCase(TestCase):
         self.assertEqual(product_obj.is_active, product_dict["is_active"])
         self.assertEqual(product_obj.created_by, self.admin)
 
+    def test_product_update_by_owner(self):
+        """
+            Test editing the product by the seller who created it using PATCH and PUT requests.
+        """
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.seller_token.key)
+        # create a new product
+        product_dict = {
+            "category": 1,
+            "title": "Asus TUF",
+            "slug": 'asus_tuf',
+            "description": '8GB RAM 15.6" FHD display',
+            "price": 12000.00,
+        }
+        resp = self.client.post("/api/v1/products/", product_dict)
+        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(Product.objects.all().count(), 3)
+        product_slug = resp.json()["slug"]
+        product_obj = Product.objects.get(slug=product_slug)
+        self.assertEqual(product_obj.in_stock, False)
+        self.assertEqual(product_obj.is_active, False)
+
+        # Update the product with PATCH request
+        product_patch = {"in_stock": True, "is_active": True}
+        resp = self.client.patch(f"/api/v1/products/{product_slug}/", product_patch)
+        self.assertEqual(resp.status_code, 200)
+        product_obj = Product.objects.get(slug=product_slug)
+        self.assertEqual(product_obj.in_stock, True)
+        self.assertEqual(product_obj.is_active, True)
+
+        # Update the product with PUT request
+        resp = self.client.get(f"/api/v1/products/{product_slug}/")
+        product_dict = resp.json()
+        product_dict['price'] = 5000
+        product_dict['title'] = "Asus Tuf A15"
+        product_dict['thumbnail'] = ""
+        resp = self.client.put(f"/api/v1/products/{product_slug}/", product_dict)
+        self.assertEqual(resp.status_code, 200)
+        product_obj = Product.objects.get(slug=product_slug)
+        self.assertEqual(product_obj.title, product_dict["title"])
+        self.assertEqual(product_obj.price, float(product_dict["price"]))
+        self.assertEqual(product_obj.is_active, product_dict["is_active"])
+        self.assertEqual(product_obj.created_by, self.seller)
+
+    def test_product_update_by_admin(self):
+        """
+            Test editing the product by the staff user using PATCH and PUT requests.
+        """
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.seller_token.key)
+        # create a new product
+        product_dict = {
+            "category": 1,
+            "title": "Asus TUF",
+            "slug": 'asus_tuf',
+            "description": '8GB RAM 15.6" FHD display',
+            "price": 12000.00,
+        }
+        resp = self.client.post("/api/v1/products/", product_dict)
+        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(Product.objects.all().count(), 3)
+        product_slug = resp.json()["slug"]
+        product_obj = Product.objects.get(slug=product_slug)
+        self.assertEqual(product_obj.in_stock, False)
+        self.assertEqual(product_obj.is_active, False)
+
+        # Update the product with PATCH request
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.admin_token.key)
+        product_patch = {"in_stock": True, "is_active": True}
+        resp = self.client.patch(f"/api/v1/products/{product_slug}/", product_patch)
+        self.assertEqual(resp.status_code, 200)
+        product_obj = Product.objects.get(slug=product_slug)
+        self.assertEqual(product_obj.in_stock, True)
+        self.assertEqual(product_obj.is_active, True)
+
+        # Update the product with PUT request
+        resp = self.client.get(f"/api/v1/products/{product_slug}/")
+        product_dict = resp.json()
+        product_dict['price'] = 5000
+        product_dict['title'] = "Asus Tuf A15"
+        product_dict['thumbnail'] = ""
+        resp = self.client.put(f"/api/v1/products/{product_slug}/", product_dict)
+        self.assertEqual(resp.status_code, 200)
+        product_obj = Product.objects.get(slug=product_slug)
+        self.assertEqual(product_obj.title, product_dict["title"])
+        self.assertEqual(product_obj.price, float(product_dict["price"]))
+        self.assertEqual(product_obj.is_active, product_dict["is_active"])
+        self.assertEqual(product_obj.created_by, self.seller)
+
+    def test_product_update_by_unauthenticated_user(self):
+        """
+            Test editing the product by unauthenticated user using PATCH and PUT requests.
+        """
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.seller_token.key)
+        # create a new product
+        product_dict = {
+            "category": 1,
+            "title": "Asus TUF",
+            "slug": 'asus_tuf',
+            "description": '8GB RAM 15.6" FHD display',
+            "price": 12000.00,
+        }
+        resp = self.client.post("/api/v1/products/", product_dict)
+        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(Product.objects.all().count(), 3)
+        product_slug = resp.json()["slug"]
+
+        # remove the credentials
+        self.client.credentials()
+
+        # Update the product with PATCH request
+        product_patch = {"title": "Test change", "description": "description change"}
+        resp = self.client.patch(f"/api/v1/products/{product_slug}/",
+                                 json.dumps(product_patch),
+                                 content_type='application/json'
+                                 )
+        self.assertEqual(resp.status_code, 401)
+
+        # Check if the data changed after update the product with PUT request
+        product = Product.objects.get(slug=product_dict['slug'])
+        resp = self.client.get(f"/api/v1/products/{product_slug}/")
+        product_resp = resp.json()
+        self.assertEqual(product_resp['title'], product_dict['title'])
+        self.assertEqual(product_resp['description'], product_dict['description'])
+        # Update the product with PUT request
+        product_resp['price'] = 5000
+        product_resp['title'] = "Asus Tuf A15"
+
+        resp = self.client.put(f"/api/v1/products/{product_slug}/",
+                               json.dumps(product_resp),
+                               content_type="application/json"
+                               )
+        self.assertEqual(resp.status_code, 401)
+
+        resp = self.client.get(f"/api/v1/products/{product_slug}/")
+        product_resp = resp.json()
+        self.assertEqual(product_dict['price'], float(product_resp['price']))
+        self.assertEqual(product_dict['title'], product_resp['title'])
