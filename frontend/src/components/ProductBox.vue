@@ -31,4 +31,8 @@ export default {
   margin-right: -1.25rem;
   margin-left: -1.25rem;
 }
+img {
+  width: 400px;
+  height: 300px;
+}
 </style>

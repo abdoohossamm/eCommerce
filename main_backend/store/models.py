@@ -124,7 +124,7 @@ class Product(models.Model):
     def get_absolute_url(self):
         return self.slug
 
-    def generate_thumbnail(self, image=None, size=(300,200)):
+    def generate_thumbnail(self, image=None, size=(400, 300)):
         img = image if image else self.images.all()[0].image if self.images.all() else None
         if img:
             image = Image.open(img)
