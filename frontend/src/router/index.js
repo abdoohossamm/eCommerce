@@ -10,6 +10,7 @@ import MyAccountView from "@/views/MyAccountView";
 import store from "@/store";
 import CheckoutView from "@/views/CheckoutView";
 import SuccessView from "@/views/SuccessView";
+import MyOrdersView from "@/views/MyOrdersView.vue";
 const routes = [
   {
     path: '/',
@@ -43,6 +44,14 @@ const routes = [
     path: '/my-account',
     name: 'my-account',
     component: MyAccountView,
+    meta:{
+      requireLogin:true
+    }
+  },
+  {
+    path: '/my-orders',
+    name: 'my-orders',
+    component: MyOrdersView,
     meta:{
       requireLogin:true
     }
