@@ -97,7 +97,7 @@ class Review(models.Model):
 
 
 class Product(models.Model):
-    category = models.ForeignKey(Category, related_name='product', on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, related_name='product', on_delete=models.PROTECT)
     title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True)
     description = models.TextField(blank=True)
