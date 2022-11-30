@@ -17,7 +17,7 @@ services:
       - ecommerce_redis
 
   main_app_nginx:
-    build: ./nginx_main_backend
+    build: ./main_backend/.nginx
     volumes:
       - static:/app/static
       - media:/app/media
