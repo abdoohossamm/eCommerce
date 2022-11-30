@@ -25,6 +25,11 @@ class OrderViewSet(viewsets.ModelViewSet):
     authentication_classes = [authentication.TokenAuthentication]
     serializer_class = OrderSerializer
 
+    def get_serializer_class(self):
+        if self.action == "mine":
+            return MyOrderSerializer
+        return OrderSerializer
+
     def create(self, request, *args, **kwargs):
 
         serializer = self.serializer_class(data=request.data)
@@ -78,20 +83,3 @@ class OrderViewSet(viewsets.ModelViewSet):
         else:
             return Response({"token": "This field is required"}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"error": "unknown error has been happened"}, status=status.HTTP_400_BAD_REQUEST)
-
-    @method_decorator(cache_page(300))
-    @method_decorator(vary_on_headers("Authorization"))
-    @method_decorator(vary_on_cookie)
-    @action(methods=["get"], detail=False, name="data owned by logged in user")
-    def mine(self, request):
-        serializer_class = MyOrderSerializer
-        if request.user.is_anonymous:
-            raise PermissionDenied("You must be logged in to see which Images are yours")
-        data = self.get_queryset().filter(created_by=request.user)
-
-        page = self.paginate_queryset(data)
-        if page is not None:
-            serializer = serializer_class(page, many=True, context={"request": request})
-            return self.get_paginated_response(serializer.data)
-        serializer = serializer_class(data, many=True, context={"request": request})
-        return Response(serializer.data)
